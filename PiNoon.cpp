@@ -26,10 +26,13 @@
 // Wiring Pi a nice C lib for accessing the GPIO 
 #include <wiringPi.h>
 #include <joystick_pi/joystick_pi.h>
+#include <zeroborg/zeroborg.h>
 
 using namespace std;
 
 static volatile bool running = true;
+
+int zb;
 
 // Get a key press from a raw terminal stream
 char getKey() 
@@ -61,15 +64,17 @@ char getKey()
 }
 
 // Set the right motor speed independently of the left, used directly by the PID engine for the line follower and in tank control mode
-void SetRightMotor(int speed)
+void SetRightMotor(float speed)
 {
-	
+	SetMotor( 1, speed);
+	SetMotor( 2, speed);
 }
 
 // Set the left motor speed independently of the right, used diectly by the PID engine for the line follower and in tank control mode
-void SetLeftMotor(int speed)
+void SetLeftMotor(float speed)
 {
-	
+	SetMotor( 3, speed);
+	SetMotor( 4, speed);	
 }
 
 // All stop!!
@@ -87,11 +92,16 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Error: requires root to run (sudo?).\n");   
 		exit(-1);
 	}    	
+	
+	if( ZeroBorgInit(1) < 0 )
+	{
+		fprintf(stderr, "Failed to init zeroborg.\n");   
+		exit(-1);
+	}    	
 
 	// Set up Wiring Pi to use native GPIO numbering
 	wiringPiSetup();
-	
-	
+		
 	// To allow us to simply press a key without Enter we set our terminal to RAW
 	// and we save the original settings to restore them on exit
 	struct termios oldSettings, newSettings;
@@ -124,14 +134,17 @@ int main(int argc, char** argv)
 				
 			// Right stick position
 			if( jse.number == 3 && jse.type == 2) 
-				rightStick = jse.value;	
+				rightStick = jse.value;
+				
+			//printf(" leftStick %d, rightStick %d \n", leftStick, rightStick);	
 					
-			int leftSpeed = (leftStick * -1) / 128;
-			int rightSpeed = (rightStick * -1) / 128;
-			printf(" LeftSpeed %d, RightSpeed %d \n", leftSpeed, rightSpeed);	
+			// Invert the right
+			float leftSpeed = (float)(leftStick ) / 32767.0;
+			float rightSpeed = (float)(rightStick * -1) / 32767.0;
+			printf(" LeftSpeed %f, RightSpeed %f \n", leftSpeed, rightSpeed);	
 			
 			// For safety
-			if( leftSpeed == 0 && rightSpeed == 0 )
+			if( leftSpeed == 0.0 && rightSpeed == 0.0 )
 			{
 				Stop();
 			}

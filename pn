@@ -1,0 +1,2 @@
+cd /home/pi/git/MicroPiWars
+sudo ./PiNoon >/dev/null
