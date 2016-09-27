@@ -142,10 +142,10 @@ int main(int argc, char** argv)
 			{
 				//printf("Event: time %8u, value %8hd, type: %3u, axis/button: %u\n", jse.time, jse.value, jse.type, jse.number);
 				if( jse.number == 5 )
-					gear -= 1;
+					gear -= 0.25;
 				
 				if( jse.number == 4 )
-					gear += 1;
+					gear += 0.25;
 				
 				if( gear < 1 )
 					gear = 1;
