@@ -121,6 +121,8 @@ int main(int argc, char** argv)
 		printf("open failed.\n");
 		exit(1);
 	}
+	
+	float gear = 2.0;
 				
 	while( running )
 	{
@@ -136,12 +138,36 @@ int main(int argc, char** argv)
 			if( jse.number == 3 && jse.type == 2) 
 				rightStick = jse.value;
 				
+			if( jse.type == 1 && jse.value == 1 )
+			{
+				//printf("Event: time %8u, value %8hd, type: %3u, axis/button: %u\n", jse.time, jse.value, jse.type, jse.number);
+				if( jse.number == 5 )
+					gear -= 1;
+				
+				if( jse.number == 4 )
+					gear += 1;
+				
+				if( gear < 1 )
+					gear = 1;
+				
+				if( gear > 3 )
+					gear = 3;
+					
+				if( jse.number == 8 )
+					running = false;
+				
+				if( jse.number == 9 )
+					system("sudo halt");								
+					
+			}
+				
+				
 			//printf(" leftStick %d, rightStick %d \n", leftStick, rightStick);	
 					
 			// Invert the right
 			float leftSpeed = (float)(leftStick ) / 32767.0;
 			float rightSpeed = (float)(rightStick * -1) / 32767.0;
-			printf(" LeftSpeed %f, RightSpeed %f \n", leftSpeed, rightSpeed);	
+			
 			
 			// For safety
 			if( leftSpeed == 0.0 && rightSpeed == 0.0 )
@@ -150,12 +176,13 @@ int main(int argc, char** argv)
 			}
 			else
 			{
-				SetLeftMotor( leftSpeed );
-				SetRightMotor( rightSpeed );
+				//printf(" LeftSpeed %f, RightSpeed %f \n", leftSpeed, rightSpeed);	
+				SetLeftMotor( leftSpeed / gear );
+				SetRightMotor( rightSpeed / gear );
 			}			
 		}
 		
-		usleep(100);	
+		usleep(1000);	
 		if(getKey() == 'x') 
 			running = false;
 
